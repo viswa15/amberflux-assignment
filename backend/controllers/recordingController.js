@@ -1,5 +1,5 @@
 // backend/controllers/recordingController.js
-const Recording = require('../models/recordingModel');
+const Recording = require('../models/recordingModels');
 const fs = require('fs');
 const path = require('path');
 
