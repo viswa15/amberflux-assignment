@@ -1,24 +1,33 @@
 // backend/config/database.js
-const sqlite3 = require('sqlite3').verbose();
+require('dotenv').config();
+const { Pool } = require('pg');
 
-// Connect to the database file
-const db = new sqlite3.Database('./database.db', (err) => {
-    if (err) {
-        console.error('Error connecting to database:', err.message);
-    } else {
-        console.log('Connected to the SQLite database.');
+const pool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+    ssl: {
+        rejectUnauthorized: false // Required for Render's managed DB
     }
 });
 
-// Function to initialize the database table
-const initDb = () => {
-    db.run(`CREATE TABLE IF NOT EXISTS recordings (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        filename TEXT NOT NULL,
-        filepath TEXT NOT NULL,
-        filesize INTEGER NOT NULL,
-        createdAt TEXT DEFAULT CURRENT_TIMESTAMP
-    )`);
+const initDb = async () => {
+    const createTableQuery = `
+        CREATE TABLE IF NOT EXISTS recordings (
+            id SERIAL PRIMARY KEY,
+            filename TEXT NOT NULL,
+            filepath TEXT NOT NULL,
+            filesize BIGINT NOT NULL,
+            "createdAt" TIMESTAMPTZ DEFAULT NOW()
+        );
+    `;
+    try {
+        await pool.query(createTableQuery);
+        console.log('Database table checked/created successfully.');
+    } catch (err) {
+        console.error('Error creating database table:', err);
+    }
 };
 
-module.exports = { db, initDb };
+module.exports = {
+    query: (text, params) => pool.query(text, params),
+    initDb
+};

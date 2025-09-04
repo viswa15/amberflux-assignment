@@ -4,6 +4,7 @@ const cors = require('cors');
 const path = require('path');
 const fs = require('fs');
 const { initDb } = require('./config/database');
+
 const recordingRoutes = require('./routes/recordingRoutes');
 
 const app = express();
