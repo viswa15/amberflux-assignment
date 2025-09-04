@@ -3,8 +3,8 @@
 A simple web application built with the MERN stack (using SQL instead of MongoDB) that allows users to record their active browser tab with microphone audio. Users can then preview, download, and upload the recording.
 
 **Live Demo:**
-* **Frontend (Vercel):** [Your-Vercel-URL]
-* **Backend (Render):** [Your-Render-URL]
+* **Frontend (Vercel):** [Your-Vercel-URL](https://amberflux-assignment.vercel.app/)
+* **Backend (Render):** [[Your-Render-URL](https://amberflux-assignment.onrender.com)]
 
 ---
 
@@ -67,6 +67,10 @@ The React app will open on `http://localhost:5173` (or another port if 5173 is b
 
 ## Known Limitations
 
+-   **Cold Starts:** Render's free web services spin down after a period of inactivity. The first request to the backend after it has gone to sleep will experience a significant delay (up to 50 seconds) while the service "wakes up." Subsequent requests will be fast. This is a common trade-off for free-tier hosting.
+
 -   **Browser Compatibility:** This application relies on the `getDisplayMedia` API, which is primarily supported in modern desktop browsers like Chrome, Firefox, and Edge. It will not work on most mobile browsers.
--   **Deployment Filesystem:** The backend is configured to save uploads to the local filesystem. This works for local development but is not suitable for production platforms with ephemeral filesystems like Render's free tier. For a production-ready app, file uploads should be handled by a dedicated cloud storage service like **AWS S3** or **Google Cloud Storage**.
+
+-   **Ephemeral Filesystem:** The backend is configured to save uploads to the local filesystem. This is not suitable for production, as files on Render's free tier are deleted on every restart or redeploy. For a production-ready app, file uploads should be handled by a dedicated cloud storage service like **AWS S3**.
+
 -   **No Authentication:** The application is public, with no user accounts or authentication. All uploaded recordings are visible to everyone.
