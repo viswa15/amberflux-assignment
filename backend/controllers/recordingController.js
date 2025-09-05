@@ -1,29 +1,28 @@
 // backend/controllers/recordingController.js
-const Recording = require('../models/recordingModels');
-const fs = require('fs');
-const path = require('path');
+const Recording = require('../models/recordingModel');
 
-// Handle new recording upload
 exports.uploadRecording = async (req, res) => {
     if (!req.file) {
         return res.status(400).json({ message: 'No file uploaded.' });
     }
     try {
-        const { filename, path: filepath, size: filesize } = req.file;
-        const newRecording = await Recording.create({ filename, filepath, filesize });
-        res.status(201).json({ message: 'Recording uploaded successfully', recording: newRecording });
+        const { key, location, size } = req.file;
+        // 'key' is the filename in S3, 'location' is the public URL
+        const newRecording = await Recording.create({ filename: key, filepath: location, filesize: size });
+        res.status(201).json({ message: 'Recording uploaded successfully to S3', recording: newRecording });
     } catch (error) {
-        res.status(500).json({ message: 'Failed to save recording to database.' });
+        console.error(error);
+        res.status(500).json({ message: 'Failed to save recording information.' });
     }
 };
 
-// Get a list of all recordings
 exports.getAllRecordings = async (req, res) => {
     try {
         const rows = await Recording.findAll();
+        // The URL is now the direct S3 path, which we already stored
         const recordings = rows.map(row => ({
-          ...row,
-          url: `${req.protocol}://${req.get('host')}/api/recordings/${row.id}`
+            ...row,
+            url: row.filepath 
         }));
         res.status(200).json(recordings);
     } catch (error) {
@@ -31,7 +30,7 @@ exports.getAllRecordings = async (req, res) => {
     }
 };
 
-// Stream a specific recording
+// The streaming endpoint is now just a redirect!
 exports.streamRecording = async (req, res) => {
     try {
         const { id } = req.params;
@@ -41,15 +40,10 @@ exports.streamRecording = async (req, res) => {
             return res.status(404).json({ message: 'Recording not found.' });
         }
         
-        const filePath = path.join(__dirname, '..', recording.filepath);
-        if (!fs.existsSync(filePath)) {
-            return res.status(404).json({ message: 'File not found on server.' });
-        }
-        
-        res.setHeader('Content-Type', 'video/webm');
-        const stream = fs.createReadStream(filePath);
-        stream.pipe(res);
+        // Redirect the client's browser directly to the S3 URL
+        res.redirect(recording.filepath);
+
     } catch (error) {
-        res.status(500).json({ message: 'Server error while streaming file.' });
+        res.status(500).json({ message: 'Server error while finding recording.' });
     }
 };
